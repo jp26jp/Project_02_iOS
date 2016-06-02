@@ -10,6 +10,7 @@ import UIKit
 import GameKit
 import AVFoundation
 
+
 class ViewController: UIViewController {
     
     var scrollView: UIScrollView!
@@ -29,7 +30,6 @@ class ViewController: UIViewController {
     var incorrectAnswerSound : AVAudioPlayer?
 
     @IBOutlet weak var questionField: UILabel!
-    @IBOutlet weak var answerField: UILabel!
     @IBOutlet weak var option01: UIButton!
     @IBOutlet weak var option02: UIButton!
     @IBOutlet weak var option03: UIButton!
@@ -52,7 +52,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         if let startGameSound = self.setupAudioPlayerWithFile("Start", type: "mp3", folder: "Sound") {
             self.startGameSound = startGameSound
         }
@@ -73,9 +72,6 @@ class ViewController: UIViewController {
     }
     
     func displayQuestion() {
-        
-        // Hide answer
-        answerField.hidden = true
         
         // Set the normal button color
         option01.backgroundColor = normalButton
@@ -125,8 +121,8 @@ class ViewController: UIViewController {
         let selectedQuestion = allQuestions[questionInfo]
 
         // Assign selected question's answer to variable
-        let correctAnswer     = selectedQuestion.answer
-        let correctAnswerInfo = selectedQuestion.answerInfo
+        let correctAnswer = selectedQuestion.answer
+        
         
         // Check if answer
         if sender.titleLabel!.text == correctAnswer {
@@ -138,13 +134,11 @@ class ViewController: UIViewController {
         } else {
             incorrectAnswerSound?.play()
             sender.backgroundColor = incorrectButton
-            questionField.text = "Wrong!"
-            answerField.hidden = false
-            answerField.text = correctAnswerInfo
-            loadNextRoundWithDelay(seconds: 4)
+            questionField.text = "Nope, sorry!\nThe answer is: \(correctAnswer)"
+            loadNextRoundWithDelay(seconds: 2)
         }
     }
-    
+
     
     
     func displayScore() {
@@ -165,13 +159,12 @@ class ViewController: UIViewController {
         } else if correct < maxQuestions && correct > 0 {
             resultsField.text = "Not bad!\nYou got \(correct) out of \(maxQuestions) correct!"
         } else {
-            resultsField.text = "You should give it another try!"
+            resultsField.text = "That was terrible!"
         }
     }
     
     func nextRound() {
         if questionsAsked == maxQuestions {
-            answerField.hidden = true
             // Game is over
             displayScore()
         } else {
