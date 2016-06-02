@@ -10,25 +10,28 @@ import UIKit
 import GameKit
 import AVFoundation
 
-
 class ViewController: UIViewController {
     
+    // Setup scrollview
     var scrollView: UIScrollView!
-    var imageView: UIImageView!
     
+    // Game settings
     let maxQuestions = 4
     var questionsAsked = 0
     var correct = 0
     var questionInfo: Int = 0
     
+    // Button colors
     let normalButton = UIColor(red: 3/255.0, green: 169/255.0, blue: 244/255.0, alpha: 1.0)
     let correctButton = UIColor(red: 76/255.0, green: 175/255.0, blue: 80/255.0, alpha: 1.0)
     let incorrectButton = UIColor(red: 244/255.0, green: 67/255.0, blue: 54/255.0, alpha: 1.0)
     
+    // Game sounds
     var startGameSound : AVAudioPlayer?
     var correctAnswerSound : AVAudioPlayer?
     var incorrectAnswerSound : AVAudioPlayer?
-
+    
+    // Buttons and labels
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet weak var option01: UIButton!
     @IBOutlet weak var option02: UIButton!
@@ -36,7 +39,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var option04: UIButton!
     @IBOutlet weak var resultsField: UILabel!
     @IBOutlet weak var playAgainButton: UIButton!
-
+    
+    // Create audio player
     func setupAudioPlayerWithFile(file:NSString, type:NSString, folder:NSString) -> AVAudioPlayer?  {
         let path = NSBundle.mainBundle().pathForResource(file as String, ofType: type as String, inDirectory: folder as String)
         let url = NSURL.fileURLWithPath(path!)
@@ -48,7 +52,7 @@ class ViewController: UIViewController {
         }
         return audioPlayer
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -63,10 +67,8 @@ class ViewController: UIViewController {
         }
         startGameSound?.play()
         displayQuestion()
-
-
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -78,53 +80,58 @@ class ViewController: UIViewController {
         option02.backgroundColor = normalButton
         option03.backgroundColor = normalButton
         option04.backgroundColor = normalButton
-
+        
         // Make sure buttons are enabled
         option01.userInteractionEnabled = true
         option02.userInteractionEnabled = true
         option03.userInteractionEnabled = true
         option04.userInteractionEnabled = true
-
+        
         if questionsAsked <= maxQuestions {
             
             // Question count
             questionsAsked += 1
-        
+            
             // Find random question
             questionInfo = GKRandomSource.sharedRandom().nextIntWithUpperBound(allQuestions.count)
-        
+            
             // Assign selected question to variable
             let selectedQuestion = allQuestions[questionInfo]
-        
+            
             // Pass selected question to the question field
             questionField.text = selectedQuestion.question
-        
+            
             // Pass selected question options to the buttons
             option01.setTitle(selectedQuestion.option01, forState: .Normal)
             option02.setTitle(selectedQuestion.option02, forState: .Normal)
             option03.setTitle(selectedQuestion.option03, forState: .Normal)
             option04.setTitle(selectedQuestion.option04, forState: .Normal)
-        
+            
         }
     }
-
+    
     
     @IBAction func checkAnswer(sender: UIButton) {
-        
-        // Disable user action after answer has been selected
-        option01.userInteractionEnabled = false
-        option02.userInteractionEnabled = false
-        option03.userInteractionEnabled = false
-        option04.userInteractionEnabled = false
         
         // Assign selected question to variable
         let selectedQuestion = allQuestions[questionInfo]
 
         // Assign selected question's answer to variable
         let correctAnswer = selectedQuestion.answer
+
+        // Disable user action after answer has been selected
+        option01.userInteractionEnabled = false
+        option02.userInteractionEnabled = false
+        option03.userInteractionEnabled = false
+        option04.userInteractionEnabled = false
         
-        
-        // Check if answer
+        // Make the text of the correct answer bold when the incorrect answer has been selected
+        let wrongAnswerText = "Nope, sorry!\nThe answer is: \(correctAnswer)"
+        let range = (wrongAnswerText as NSString).rangeOfString(correctAnswer)
+        let attributedString = NSMutableAttributedString(string:wrongAnswerText)
+        attributedString.addAttribute(NSForegroundColorAttributeName, value: UIFont.boldSystemFontOfSize(20.0), range: range)
+
+        // Check answer
         if sender.titleLabel!.text == correctAnswer {
             correct += 1
             correctAnswerSound?.play()
@@ -134,12 +141,10 @@ class ViewController: UIViewController {
         } else {
             incorrectAnswerSound?.play()
             sender.backgroundColor = incorrectButton
-            questionField.text = "Nope, sorry!\nThe answer is: \(correctAnswer)"
+            questionField.text = wrongAnswerText
             loadNextRoundWithDelay(seconds: 2)
         }
     }
-
-    
     
     func displayScore() {
         
@@ -185,14 +190,14 @@ class ViewController: UIViewController {
         // Ask to play again
         playAgainButton.hidden = true
         resultsField.hidden = true
-
+        
         questionsAsked = 0
         correct = 0
         nextRound()
     }
     
     func loadNextRoundWithDelay(seconds seconds: Int) {
-
+        
         // Converts a delay in seconds to nanoseconds as signed 64 bit integer
         let delay = Int64(NSEC_PER_SEC * UInt64(seconds))
         
@@ -204,6 +209,5 @@ class ViewController: UIViewController {
             self.nextRound()
         }
     }
-    
 }
 
